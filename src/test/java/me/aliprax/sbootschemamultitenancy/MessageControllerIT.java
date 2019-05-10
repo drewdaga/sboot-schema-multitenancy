@@ -8,10 +8,10 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.RequestEntity;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 
 import java.net.URI;
 
@@ -45,9 +45,53 @@ public class MessageControllerIT {
         assertThat(responsePost.getBody())
                 .hasFieldOrProperty("uuid")
                 .hasFieldOrPropertyWithValue("message",message.getMessage());
+        String messageUuid = responsePost.getBody().getUuid();
 
+        // Construct a header with the tenant-uuid to delete the message
+        MultiValueMap<String, String> headers = new LinkedMultiValueMap<>();
+        headers.add("tenant-uuid", tenantUuid);
+        HttpEntity<?> request = new HttpEntity<Object>(headers);
+        restTemplate.exchange(URI.create("/messages/1?uuid="+messageUuid), HttpMethod.DELETE, request, String.class);
 
-        restTemplate.delete("/tenant/{uuid}",response.getBody().getUuid());
+        // Delete the tenant we created for this test
+        restTemplate.delete("/tenants/1?uuid={uuid}",tenantUuid);
+    }
+
+    @Test
+    public void testMessageDeletion(){
+        Tenant tenant = new Tenant();
+        tenant.setSchemaName("MESSAGE_TEST_DELETE");
+        tenant.setTenantName("testMessageDeletion");
+        ResponseEntity<Tenant> response = restTemplate.postForEntity("/tenants",tenant,Tenant.class);
+
+        String tenantUuid = response.getBody().getUuid();
+        Message message = new Message();
+        message.setMessage("This is a test message");
+        ResponseEntity<Message> responsePost = restTemplate.exchange(RequestEntity
+                .post(URI.create("/messages"))
+                .header("tenant-uuid",tenantUuid)
+                .body(message), Message.class);
+        String messageUuid = responsePost.getBody().getUuid();
+
+        // Construct a header with the tenant-uuid to delete the message
+        MultiValueMap<String, String> headers = new LinkedMultiValueMap<>();
+        headers.add("tenant-uuid", tenantUuid);
+        HttpEntity<?> request = new HttpEntity<Object>(headers);
+        restTemplate.exchange(URI.create("/messages/1?uuid="+messageUuid), HttpMethod.DELETE, request, String.class);
+
+        // Get the list of messages available and check to ensure it is empty
+        ResponseEntity<RestPageImpl> getResponse  = restTemplate.exchange("/messages",
+                HttpMethod.GET, request, RestPageImpl.class);
+
+        assertThat(getResponse.getBody().getTotalElements()).isEqualByComparingTo(0L);
+
+        // Delete the tenant we created for this test
+        restTemplate.delete("/tenants/1?uuid={uuid}",tenantUuid);
+
+        // Get the list of tenants available and check to ensure it is empty
+        getResponse  = restTemplate.exchange("/tenants",
+                HttpMethod.GET, null, RestPageImpl.class);
+        assertThat(getResponse.getBody().getTotalElements()).isEqualByComparingTo(0L);
     }
 
 }
