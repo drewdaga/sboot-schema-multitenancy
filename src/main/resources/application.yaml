@@ -13,6 +13,6 @@ spring:
     properties:
       hibernate:
         physical_naming_strategy: org.springframework.boot.orm.jpa.hibernate.SpringPhysicalNamingStrategy
-
+        jdbc.lob.non_contextual_creation: true
 flyway.enabled: true
 
