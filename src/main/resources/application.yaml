@@ -1,6 +1,10 @@
 spring:
   application:
     name: sboot-schema-multitenancy
+  datasource:
+      url: jdbc:postgresql:postgres_demo
+      username: postgres
+      password: postgres
   profiles:
     active: test
   jackson:

@@ -22,7 +22,7 @@ public class FlywayConfig {
         Flyway flyway = new Flyway();
         flyway.setLocations("db/migration/default");
         flyway.setDataSource(dataSource);
-        flyway.setSchemas("DEFAULT_SCHEMA");
+        flyway.setSchemas("default_schema");
         flyway.migrate();
         return flyway;
     }
