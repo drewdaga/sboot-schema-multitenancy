@@ -51,7 +51,7 @@ public class MessageControllerIT {
         MultiValueMap<String, String> headers = new LinkedMultiValueMap<>();
         headers.add("tenant-uuid", tenantUuid);
         HttpEntity<?> request = new HttpEntity<Object>(headers);
-        restTemplate.exchange(URI.create("/messages/1?uuid="+messageUuid), HttpMethod.DELETE, request, String.class);
+        restTemplate.exchange("/messages/1?uuid="+messageUuid, HttpMethod.DELETE, request, String.class);
 
         // Delete the tenant we created for this test
         restTemplate.delete("/tenants/1?uuid={uuid}",tenantUuid);
@@ -77,7 +77,7 @@ public class MessageControllerIT {
         MultiValueMap<String, String> headers = new LinkedMultiValueMap<>();
         headers.add("tenant-uuid", tenantUuid);
         HttpEntity<?> request = new HttpEntity<Object>(headers);
-        restTemplate.exchange(URI.create("/messages/1?uuid="+messageUuid), HttpMethod.DELETE, request, String.class);
+        restTemplate.exchange("/messages/1?uuid="+messageUuid, HttpMethod.DELETE, request, String.class);
 
         // Get the list of messages available and check to ensure it is empty
         ResponseEntity<RestPageImpl> getResponse  = restTemplate.exchange("/messages",
